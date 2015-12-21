@@ -6,12 +6,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by amir on 2015-12-21.
  */
 public class BinarySearchTree<T extends Comparable<T>> {
     private Node<T> root;
+
+    private List<Node<T>> inorderCache;
+    private List<Node<T>> preorderCache;
+    private List<Node<T>> postorderCache;
+
+    private transient boolean changesMade = true;
 
     public BinarySearchTree() {
         root = null;
@@ -35,6 +42,8 @@ public class BinarySearchTree<T extends Comparable<T>> {
     }
 
     private void add(Node<T> start, Node<T> in) {
+        changesMade = true;
+
         if (start == null) {
             this.root = in;
             return;
@@ -69,6 +78,8 @@ public class BinarySearchTree<T extends Comparable<T>> {
     }
 
     private void remove(Node<T> start, T data) {
+        changesMade = true;
+
         if (start == null) {
             throw new UnsupportedOperationException("Tree is empty");
         }
@@ -123,6 +134,7 @@ public class BinarySearchTree<T extends Comparable<T>> {
     }
 
     public void empty() {
+        changesMade = true;
         root = null;
     }
 
@@ -149,13 +161,17 @@ public class BinarySearchTree<T extends Comparable<T>> {
         return false;
     }
 
-    public ArrayList<Node<T>> inorder() {
-        ArrayList<Node<T>> list = new ArrayList<>();
-        inorder(root, list);
-        return list;
+    public List<Node<T>> inorder() {
+        if (!changesMade) {
+            return inorderCache;
+        }
+
+        inorderCache = new ArrayList<>();
+        inorder(root, inorderCache);
+        return inorderCache;
     }
 
-    private void inorder(Node<T> node, ArrayList<Node<T>> list) {
+    private void inorder(Node<T> node, List<Node<T>> list) {
         if (node == null) {
             return;
         }
@@ -164,13 +180,17 @@ public class BinarySearchTree<T extends Comparable<T>> {
         inorder(node.getRight(), list);
     }
 
-    public ArrayList<Node<T>> postorder() {
-        ArrayList<Node<T>> list = new ArrayList<>();
-        postorder(root, list);
-        return list;
+    public List<Node<T>> postorder() {
+        if (!changesMade) {
+            return postorderCache;
+        }
+
+        postorderCache = new ArrayList<>();
+        postorder(root, postorderCache);
+        return postorderCache;
     }
 
-    private void postorder(Node<T> node, ArrayList<Node<T>> list) {
+    private void postorder(Node<T> node, List<Node<T>> list) {
         if (node == null) {
             return;
         }
@@ -179,13 +199,17 @@ public class BinarySearchTree<T extends Comparable<T>> {
         list.add(node);
     }
 
-    public ArrayList<Node<T>> preorder() {
-        ArrayList<Node<T>> list = new ArrayList<>();
-        preorder(root, list);
-        return list;
+    public List<Node<T>> preorder() {
+        if (!changesMade) {
+            return preorderCache;
+        }
+
+        preorderCache = new ArrayList<>();
+        preorder(root, preorderCache);
+        return preorderCache;
     }
 
-    private void preorder(Node<T> node, ArrayList<Node<T>> list) {
+    private void preorder(Node<T> node, List<Node<T>> list) {
         if (node == null) {
             return;
         }
