@@ -9,18 +9,18 @@ public class BSTTester {
     public void testBinarySearchTree() {
         BinarySearchTree<String> bst = new BinarySearchTree<>();
 
-        bst.add("Java");
-        bst.add("Programming");
-        bst.add("C");
-        bst.add("Assembly");
-        bst.add("Architecture");
-        bst.add("Single Cycle");
-        bst.add("Multi Cycle");
-        bst.add("Pipelines");
-        bst.add("Trees");
-        bst.add("Graphs");
-        bst.add("Binary");
-        bst.add("Hex");
+        bst.insert("Java");
+        bst.insert("Programming");
+        bst.insert("C");
+        bst.insert("Assembly");
+        bst.insert("Architecture");
+        bst.insert("Single Cycle");
+        bst.insert("Multi Cycle");
+        bst.insert("Pipelines");
+        bst.insert("Trees");
+        bst.insert("Graphs");
+        bst.insert("Binary");
+        bst.insert("Hex");
 
         for (BinarySearchTree.Node nodes : bst.inorder()) {
             String data = (String) nodes.getData();

@@ -11,154 +11,33 @@ import java.util.List;
 /**
  * Created by amir on 2015-12-21.
  */
-public class BinarySearchTree<T extends Comparable<T>> {
-    private Node<T> root;
+import java.util.LinkedList;
+import java.util.List;
 
+public class BinarySearchTree<T extends Comparable<T>> {
+    // Size is maintained so creating inorder traversals would be faster.
+    private int size = 0;
+    private Node<T> root;
     private List<Node<T>> inorderCache;
     private List<Node<T>> preorderCache;
     private List<Node<T>> postorderCache;
-
     private transient boolean changesMade = true;
 
     public BinarySearchTree() {
         root = null;
     }
 
+
+    public int getSize() {
+        return size;
+    }
+
     public Node<T> getRoot() {
         return root;
     }
 
-    /*public BinarySearchTree(Node root) {
-        this.root = root;
-    } */
-
-    private int compare(T x, T y) {
-        return x.compareTo(y);
-    }
-
-    public void add(T data) {
-        Node<T> n = new Node<>(data);
-        add(root, n);
-    }
-
-    private void add(Node<T> start, Node<T> in) {
-        changesMade = true;
-
-        if (start == null) {
-            this.root = in;
-            return;
-        }
-        int cmp = compare(in.getData(), start.getData());
-
-        if (cmp < 0) {
-            if (start.getLeft() == null) {
-                start.setLeft(in);
-                in.setParent(start);
-
-                balance(start);
-            } else {
-                add(start.getLeft(), in);
-            }
-        } else if (cmp > 0) {
-            if (start.getRight() == null) {
-                start.setRight(in);
-                in.setParent(start);
-
-                balance(start);
-            } else {
-                add(start.getRight(), in);
-            }
-        }
-
-
-    }
-
-    public void remove(T data) {
-        remove(root, data);
-    }
-
-    private void remove(Node<T> start, T data) {
-        changesMade = true;
-
-        if (start == null) {
-            throw new UnsupportedOperationException("Tree is empty");
-        }
-        int cmp = compare(data, start.getData());
-
-        if (cmp < 0) {
-            remove(start.getLeft(), data);
-        } else if (cmp > 0) {
-            remove(start.getRight(), data);
-        } else {
-            removeNode(start);
-        }
-    }
-
-    private void removeNode(Node<T> n1) {
-        Node<T> n2;
-        if (n1.getLeft() == null || n1.getRight() == null) {
-            if (n1.getParent() == null) {
-                this.root = null;
-                n1 = null;
-                return;
-            }
-            n2 = n1;
-        } else {
-            n2 = successor(n1);
-            n1.setData(n2.getData());
-        }
-
-        Node<T> n3;
-        if (n2.getLeft() != null) {
-            n3 = n2.getLeft();
-        } else {
-            n3 = n2.getRight();
-        }
-
-        if (n3 != null) {
-            n3.setParent(n2.getParent());
-        }
-
-        if (n2.getParent() == null) {
-            this.root = n3;
-        } else {
-            if (n2 == n2.getParent().getLeft()) {
-                n2.getParent().setLeft(n3);
-            } else {
-                n2.getParent().setRight(n3);
-            }
-
-            balance(n2.getParent());
-        }
-        n2 = null;
-    }
-
-    public void empty() {
-        changesMade = true;
-        root = null;
-    }
-
-    public boolean isEmpty() {
-        return root == null;
-    }
-
-    public boolean contains(T data) {
-        return contains(root, data);
-    }
-
-    public boolean contains(Node<T> node, T data) {
-        while (node != null) {
-            int cmp = compare(data, node.getData());
-
-            if (cmp < 0) {
-                node = node.getLeft();
-            } else if (cmp > 0) {
-                node = node.getRight();
-            } else {
-                return true;
-            }
-        }
-        return false;
+    private int compare(T data1, T data2) {
+        return data1.compareTo(data2);
     }
 
     public List<Node<T>> inorder() {
@@ -166,7 +45,7 @@ public class BinarySearchTree<T extends Comparable<T>> {
             return inorderCache;
         }
 
-        inorderCache = new ArrayList<>();
+        inorderCache = new LinkedList<>();
         inorder(root, inorderCache);
         return inorderCache;
     }
@@ -185,7 +64,7 @@ public class BinarySearchTree<T extends Comparable<T>> {
             return postorderCache;
         }
 
-        postorderCache = new ArrayList<>();
+        postorderCache = new LinkedList<>();
         postorder(root, postorderCache);
         return postorderCache;
     }
@@ -204,7 +83,7 @@ public class BinarySearchTree<T extends Comparable<T>> {
             return preorderCache;
         }
 
-        preorderCache = new ArrayList<>();
+        preorderCache = new LinkedList<>();
         preorder(root, preorderCache);
         return preorderCache;
     }
@@ -218,155 +97,232 @@ public class BinarySearchTree<T extends Comparable<T>> {
         preorder(node.getRight(), list);
     }
 
-    private void balance(Node<T> node) {
-        setBalance(node);
-        int balance = node.getBalance();
-
-        if (balance == -2) {
-            if (height(node.getLeft().getLeft()) >= height(node.getLeft().getRight())) {
-                node = rotateRight(node);
-            } else {
-                node = doubleRotateLeftRight(node);
-            }
-        } else if (balance == 2) {
-            if (height(node.getRight().getRight()) >= height(node.getRight().getLeft())) {
-                node = rotateLeft(node);
-            } else {
-                node = doubleRotateRightLeft(node);
-            }
-        }
-
-        if (node.getParent() != null) {
-            balance(node.getParent());
-        } else {
-            this.root = node;
-        }
-    }
-
-    private void setBalance(Node<T> node) {
-        node.setBalance(height(node.getRight()) - height(node.getLeft()));
-    }
-
-    private Node<T> successor(Node<T> n1) {
-        if (n1.getRight() != null) {
-            Node<T> n2 = n1.getRight();
-            while ((n2.getLeft() != null)) {
-                n2 = n2.getLeft();
-            }
-            return n2;
-        } else {
-            Node<T> n2 = n1.getParent();
-            while (n2 != null && n1 == n2.getRight()) {
-                n1 = n2;
-                n2 = n1.getParent();
-            }
-            return n2;
-        }
-    }
-
     private int height(Node<T> node) {
-        if (node == null)
-            return -1;
+        return node == null ? -1 : node.getHeight();
+    }
 
-        if (node.getLeft() == null && node.getRight() == null) {
-            return 0;
-        } else if (node.getLeft() == null) {
-            return 1 + height(node.getRight());
-        } else if (node.getRight() == null) {
-            return 1 + height(node.getLeft());
+    private int max(int left, int right) {
+        return left > right ? left : right;
+    }
+
+    private Node<T> rotateWithLeftChild(Node<T> n2) {
+        Node<T> n1 = n2.left;
+
+        n2.left = n1.right;
+        n1.right = n2;
+
+        n2.height = max(height(n2.left), height(n2.right)) + 1;
+        n1.height = max(height(n1.left), n2.height) + 1;
+
+        return n1;
+    }
+
+    private Node<T> rotateWithRightChild(Node<T> n1) {
+        Node<T> n2 = n1.right;
+        n1.right = n2.left;
+        n2.left = n1;
+
+        n1.height = max(height(n1.left), height(n1.right)) + 1;
+        n2.height = max(height(n2.right), n1.height) + 1;
+        return n2;
+    }
+
+    private Node<T> doubleRotateWithLeftChild(Node<T> n1) {
+        n1.left = rotateWithRightChild(n1.left);
+        return rotateWithLeftChild(n1);
+    }
+
+    private Node<T> doubleRotateWithRightChild(Node<T> n1) {
+        n1.right = rotateWithLeftChild(n1.right);
+        return rotateWithRightChild(n1);
+    }
+
+    private Node<T> findMax(Node<T> node) {
+        if (node == null) {
+            return null;
+        }
+
+        while (node.right != null) {
+            node = node.right;
+        }
+
+        return node;
+    }
+
+    private Node<T> findMin(Node<T> node) {
+        if (node == null) {
+            return null;
+        }
+
+        while (node.left != null) {
+            node = node.left;
+        }
+
+        return node;
+    }
+
+    public void insert(T data) {
+        size++;
+        root = insert(data, root);
+    }
+
+    private Node<T> insert(T data, Node<T> node) {
+        if (node == null) {
+            node = new Node<>(data);
         } else {
-            return 1 + max(height(node.getLeft()), height(node.getRight()));
+
+            int cmp = compare(data, node.data);
+
+            if (cmp < 0) {
+
+                node.left = insert(data, node.left);
+
+                if (height(node.left) - height(node.right) == 2) {
+                    if (compare(data, node.left.data) < 0) {
+                        node = rotateWithLeftChild(node);
+                    } else {
+                        node = doubleRotateWithLeftChild(node);
+                    }
+                }
+
+            } else if (cmp > 0) {
+
+                node.right = insert(data, node.right);
+
+                if (height(node.right) - height(node.left) == 2) {
+                    if (compare(data, node.right.data) > 0) {
+                        node = rotateWithRightChild(node);
+                    } else {
+                        node = doubleRotateWithRightChild(node);
+                    }
+                }
+
+            } else {
+                size--;
+            }
+
+        }
+        node.height = max(height(node.left), height(node.right)) + 1;
+        return node;
+    }
+
+    public void remove(T data) {
+        size--;
+        root = remove(data, root);
+    }
+
+    public Node<T> remove(T x, Node<T> n) {
+        if (n == null) {
+            size++;
+            return null;
+        }
+        int cmp = compare(x, n.data);
+
+        if (cmp < 0) {
+
+            n.left = remove(x, n.left);
+            n.height = max(height(n.left), height(n.right)) + 1;
+            return n;
+
+        } else if (cmp > 0) {
+
+            n.right = remove(x, n.right);
+            n.height = max(height(n.left), height(n.right)) + 1;
+            return n;
+
+        } else {
+
+            if (n.left == null && n.right == null) {
+                return null;
+            }
+
+            if (n.left == null) {
+                return n.right;
+
+            } else if (n.right == null) {
+                return n.left;
+            }
+
+            T tmp = findMin(n.getRight()).data;
+            n.data = tmp;
+
+            n.setRight(remove(n.data, n.right));
+            n.height = max(height(n.left), height(n.right)) + 1;
+            return n;
+
         }
     }
 
-    private Node<T> rotateLeft(Node<T> n1) {
-        Node<T> n2 = n1.getRight();
-        n2.setParent(n1.getParent());
+    public boolean contains(T data) {
+        return find(data) != null;
+    }
 
-        n1.setRight(n2.getLeft());
+    public Node<T> find(T data) {
+        return find(data, root);
+    }
 
-        if (n1.getRight() != null) {
-            n1.getRight().setParent(n1);
-        }
-
-        n2.setLeft(n1);
-        n1.setParent(n2);
-
-        if (n2.getParent() != null) {
-            if (n2.getParent().getRight() == n1) {
-                n2.getParent().setRight(n2);
-            } else if (n2.getParent().getLeft() == n1) {
-                n2.getParent().setLeft(n2);
+    private Node<T> find(T data, Node<T> node) {
+        while (node != null) {
+            int cmp = compare(data, node.data);
+            if (cmp < 0) {
+                node = node.left;
+            } else if (cmp > 0) {
+                node = node.right;
+            } else {
+                return node;
             }
         }
-        setBalance(n1);
-        setBalance(n2);
-
-        return n2;
+        return null;
     }
 
-    public Node<T> rotateRight(Node<T> n1) {
+    public class Node<Data extends Comparable<Data>> {
+        private Data data;
+        private Node<Data> left;
+        private Node<Data> right;
+        private int height = 0;
 
-        Node<T> n2 = n1.getLeft();
-        n2.setParent(n1.getParent());
-
-        n1.setLeft(n2.getRight());
-
-        if (n1.getLeft() != null) {
-            n1.getLeft().setParent(n1);
+        public Node(Data data) {
+            this.data = data;
         }
 
-        n2.setRight(n1);
-        n1.setParent(n2);
+        public Node(Data data, Node<Data> left, Node<Data> right) {
+            this.data = data;
 
-
-        if (n2.getParent() != null) {
-            if (n2.getParent().getRight() == n1) {
-                n2.getParent().setRight(n2);
-            } else if (n2.getParent().getLeft() == n1) {
-                n2.getParent().setLeft(n2);
-            }
+            this.left = left;
+            this.right = right;
         }
 
-        setBalance(n1);
-        setBalance(n2);
+        public Data getData() {
+            return data;
+        }
 
-        return n2;
-    }
+        public void setData(Data data) {
+            this.data = data;
+        }
 
-    private Node<T> doubleRotateLeftRight(Node<T> n1) {
-        n1.setLeft(rotateLeft(n1.getLeft()));
-        return rotateRight(n1);
-    }
+        public Node<Data> getLeft() {
+            return left;
+        }
 
-    private Node<T> doubleRotateRightLeft(Node<T> n1) {
-        n1.setRight(rotateRight(n1.getRight()));
-        return rotateLeft(n1);
-    }
+        public void setLeft(Node<Data> left) {
+            this.left = left;
+        }
 
-    private int max(int a, int b) {
-        return Math.max(a, b);
-    }
+        public Node<Data> getRight() {
+            return right;
+        }
 
+        public void setRight(Node<Data> right) {
+            this.right = right;
+        }
 
-    @RequiredArgsConstructor
-    public class Node<T extends Comparable<T>> {
-        @Getter
-        @Setter
-        @NonNull
-        private T data;
-        @Getter
-        @Setter
-        private Node<T> left;
-        @Getter
-        @Setter
-        private Node<T> right;
-        @Getter
-        @Setter
-        private Node<T> parent;
-        @Getter
-        @Setter
-        private int balance;
+        public int getHeight() {
+            return height;
+        }
+
+        public void setHeight(int height) {
+            this.height = height;
+        }
 
         @Override
         public boolean equals(Object o) {
